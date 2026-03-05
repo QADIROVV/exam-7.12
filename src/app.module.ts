@@ -2,9 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
-import { UsersModule } from './users/users.module';
-import { VacanciesModule } from './vacancies/vacancies.module';
-import { ResumesModule } from './resumes/resumes.module';
 
 @Module({
   imports: [
@@ -25,11 +22,6 @@ import { ResumesModule } from './resumes/resumes.module';
       inject: [ConfigService],
     }),
 
-    // Feature Modules
-    AuthModule,
-    UsersModule,
-    VacanciesModule,
-    ResumesModule,
   ],
 })
 export class AppModule {}
