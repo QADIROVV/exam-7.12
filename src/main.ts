@@ -17,7 +17,7 @@ async function bootstrap(): Promise<void> {
 
   await app.listen(port);
   console.log(` Server running on http://localhost:${port}`);
-  console.log(` Swagger docs at http://localhost:${port}`);
+  console.log(` Dokumentation link http://localhost:${port}`);
 }
 
 bootstrap();
