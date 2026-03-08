@@ -5,7 +5,7 @@ import {
 } from 'class-validator';
 import { UserRole } from '../../common/enums';
 
-export class RegisterDto {
+export class CreateUserDto {
   @ApiProperty({ example: 'shahriyorqadirov@mail.com' })
   @IsEmail({}, { message: 'Email notogri' })
   email: string;
@@ -39,19 +39,47 @@ export class RegisterDto {
   phoneNumber?: string;
 }
 
-export class LoginDto {
-  @ApiProperty({ example: 'shahriyorqadirov@mail.com' })
-  @IsEmail({}, { message: 'Email notogri' })
-  email: string;
-
-  @ApiProperty({ example: 'Parol123' })
+export class UpdateUserDto {
+  @ApiPropertyOptional({ example: 'shahriyor' })
+  @IsOptional()
   @IsString()
-  @MinLength(6)
-  password: string;
+  @MinLength(2)
+  @MaxLength(50)
+  firstName?: string;
+
+  @ApiPropertyOptional({ example: 'qadirov' })
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(50)
+  lastName?: string;
+
+  @ApiPropertyOptional({ example: '+998953484247' })
+  @IsOptional()
+  @Matches(/^\+998[0-9]{9}$/, { message: 'Telefon +998XXXXXXXXX formatida bolsin' })
+  phoneNumber?: string;
+
+  @ApiPropertyOptional({ example: 'Toshkent' })
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  city?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  @MaxLength(1000)
+  about?: string;
 }
 
-export class RefreshTokenDto {
-  @ApiProperty({ description: 'Login da qaytarilgan refreshToken' })
+export class ChangePasswordDto {
+  @ApiProperty()
   @IsString()
-  refreshToken: string;
+  currentPassword: string;
+
+  @ApiProperty()
+  @IsString()
+  @MinLength(8, { message: 'Yangi parol kamida 8 ta belgi' })
+  @MaxLength(50)
+  newPassword: string;
 }

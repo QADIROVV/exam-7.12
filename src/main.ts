@@ -1,65 +1,68 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, Logger } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { AppModule } from './app.module';
-import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import { AppModule } from './app.module';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
+  const logger = new Logger('Bootstrap');
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  // Global prefix
+  // Global API prefix
   app.setGlobalPrefix('api/v1');
 
   // CORS
-  app.enableCors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  });
+  app.enableCors({ origin: '*' });
 
-  // Global Validation Pipe
+  // Static uploads
+  app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads' });
+
+  // Global validation
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      transform: true,
       forbidNonWhitelisted: true,
+      transform: true,
       transformOptions: { enableImplicitConversion: true },
     }),
   );
 
-  // Static files (uploads)
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads',
-  });
+  // Global exception filter
+  app.useGlobalFilters(new HttpExceptionFilter());
 
-  // Swagger API Documentation
-  const config = new DocumentBuilder()
+  // Swagger configuration
+  const swaggerConfig = new DocumentBuilder()
     .setTitle('HH.uz API')
-    .setDescription('HH.uz ishga yollash platformasi - To\'liq REST API')
-    .setVersion('1.0')
+    .setDescription('HH.uz ish qidirish portali - NestJS + PostgreSQL + MongoDB')
+    .setVersion('1.0.0')
     .addBearerAuth(
       { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
       'JWT-auth',
     )
-    .addTag('Auth', 'Autentifikatsiya')
-    .addTag('Users', 'Foydalanuvchilar')
-    .addTag('Vacancies', 'Vakansiyalar')
-    .addTag('Resumes', 'Rezyumalar')
+    .addTag('Auth',          'Register, Login, Logout, Token yangilash')
+    .addTag('Users',         'Foydalanuvchi profili')
+    .addTag('Companies',     'Kompaniyalar')
+    .addTag('Vacancies',     'Vakansiyalar')
+    .addTag('Resumes',       'Rezyumalar')
+    .addTag('Applications',  'Arizalar')
+    .addTag('Categories',    'Kategoriyalar')
+    .addTag('Notifications', 'Bildirishnomalar (MongoDB)')
+    .addTag('Uploads',       'Fayl yuklash')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document, {
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, swaggerDocument, {
     swaggerOptions: { persistAuthorization: true },
   });
 
   const port = process.env.PORT || 3000;
   await app.listen(port);
 
-  console.log(`\n🚀 HH.uz Backend ishga tushdi!`);
-  console.log(`📡 Server is running on: http://localhost:${port}`);
-  console.log(`📚 Dokumentation link: http://localhost:${port}/api/docs`);
-  console.log(`🌿 MongoDB: ${process.env.MONGODB_URI}\n`);
+  console.log(`Server is running on: http://localhost:${port}/api/v1`);
+  console.log(`Swagger dokumentatsiya: http://localhost:${port}/api/docs`);
 }
 
 bootstrap();
